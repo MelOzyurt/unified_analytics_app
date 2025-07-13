@@ -15,4 +15,4 @@ def show_sidebar():
                 st.success("Logged out.")
                 st.experimental_rerun()
         else:
-                st.caption("Tip: Balance top-up is available after login.")
+            pass  # 👈 Hiçbir şey göstermiyoruz, açıklamaları kaldırdık
