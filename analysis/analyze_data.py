@@ -34,7 +34,6 @@ def analyze_data_ui(df: pd.DataFrame):
         st.subheader("Descriptive Statistics")
         st.write(df[numeric_cols].describe())
 
-        # Histogram for selected column
         col = st.selectbox("Select column to plot histogram", numeric_cols)
         st.bar_chart(df[col])
 
@@ -45,23 +44,35 @@ def analyze_data_ui(df: pd.DataFrame):
 
         clf = IsolationForest(contamination=contamination, random_state=42)
         preds = clf.fit_predict(df[numeric_cols])
-        df["anomaly"] = preds
+
+        df_copy = df.copy()
+        df_copy["anomaly"] = preds
         st.write("Anomalies detected (-1 indicates anomaly):")
-        st.dataframe(df[df["anomaly"] == -1])
+        st.dataframe(df_copy[df_copy["anomaly"] == -1])
 
     elif option == "Trends and Anomalies":
         st.subheader("Trends and Anomalies")
 
-        time_col = st.selectbox("Select time column (optional, if exists)", df.columns)
-        target_col = st.selectbox("Select target numeric column", numeric_cols)
+        # Filter columns that could be datetime
+        possible_time_cols = df.columns[df.dtypes.isin([np.dtype('O'), 'datetime64[ns]'])].tolist()
+        time_col = st.selectbox("Select time column (optional)", [""] + possible_time_cols)
 
         if time_col:
             try:
-                df[time_col] = pd.to_datetime(df[time_col])
-                df_sorted = df.sort_values(time_col)
+                df_copy = df.copy()
+                df_copy[time_col] = pd.to_datetime(df_copy[time_col], errors='coerce')
+
+                # Drop rows where time_col couldn't be converted
+                df_clean = df_copy.dropna(subset=[time_col])
+                if df_clean.empty:
+                    st.error("No valid dates found in the selected time column.")
+                    return
+
+                df_sorted = df_clean.sort_values(time_col)
                 df_sorted.set_index(time_col, inplace=True)
 
-                # Rolling mean
+                target_col = st.selectbox("Select target numeric column", numeric_cols)
+
                 window = st.slider("Rolling window size", 3, 30, 7)
                 rolling_mean = df_sorted[target_col].rolling(window=window).mean()
 
@@ -69,7 +80,6 @@ def analyze_data_ui(df: pd.DataFrame):
                 ax.plot(df_sorted[target_col], label="Original")
                 ax.plot(rolling_mean, label=f"Rolling Mean (window={window})")
 
-                # Simple anomaly detection where actual deviates from rolling mean by 2 std
                 residual = df_sorted[target_col] - rolling_mean
                 std_dev = residual.std()
                 anomalies = residual.abs() > (2 * std_dev)
@@ -81,37 +91,44 @@ def analyze_data_ui(df: pd.DataFrame):
             except Exception as e:
                 st.error(f"Error processing time column: {e}")
         else:
-            st.info("Please select a valid time column.")
+            st.info("Please select a valid time column to analyze trends.")
 
     elif option == "Prediction Analysis":
         st.subheader("Prediction Analysis (Linear Regression)")
 
-        feature_cols = st.multiselect("Select feature columns (numeric)", numeric_cols, default=numeric_cols[:-1])
+        default_features = numeric_cols[:-1] if len(numeric_cols) > 1 else numeric_cols
+        feature_cols = st.multiselect("Select feature columns (numeric)", numeric_cols, default=default_features)
         target_col = st.selectbox("Select target column (numeric)", numeric_cols)
 
         if feature_cols and target_col:
+            if target_col in feature_cols:
+                st.warning("Target column should not be in features.")
+                return
+
             X = df[feature_cols].values
             y = df[target_col].values
 
-            model = LinearRegression()
-            model.fit(X, y)
-            y_pred = model.predict(X)
+            try:
+                model = LinearRegression()
+                model.fit(X, y)
+                y_pred = model.predict(X)
 
-            st.write("Regression Coefficients:")
-            coef_df = pd.DataFrame({
-                "Feature": feature_cols,
-                "Coefficient": model.coef_
-            })
-            st.dataframe(coef_df)
+                st.write("Regression Coefficients:")
+                coef_df = pd.DataFrame({
+                    "Feature": feature_cols,
+                    "Coefficient": model.coef_
+                })
+                st.dataframe(coef_df)
 
-            # Plot actual vs predicted
-            fig, ax = plt.subplots()
-            ax.scatter(y, y_pred)
-            ax.plot([y.min(), y.max()], [y.min(), y.max()], 'r--')
-            ax.set_xlabel("Actual")
-            ax.set_ylabel("Predicted")
-            ax.set_title("Actual vs Predicted")
-            st.pyplot(fig)
+                fig, ax = plt.subplots()
+                ax.scatter(y, y_pred, alpha=0.7)
+                ax.plot([y.min(), y.max()], [y.min(), y.max()], 'r--')
+                ax.set_xlabel("Actual")
+                ax.set_ylabel("Predicted")
+                ax.set_title("Actual vs Predicted")
+                st.pyplot(fig)
+            except Exception as e:
+                st.error(f"Failed to fit model: {e}")
+
         else:
             st.info("Select at least one feature and one target column.")
-
