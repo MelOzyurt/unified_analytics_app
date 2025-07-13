@@ -7,6 +7,11 @@ from analysis.analyze_data import analyze_data_ui
 from analysis.analyze_feedback import analyze_feedback_ui
 from analysis.chat_with_doc import chat_with_doc_ui
 
+from components.sidebar import show_sidebar
+
+app_mode = show_sidebar()
+
+
 def main():
     # Run login UI and check
     login_ui()
