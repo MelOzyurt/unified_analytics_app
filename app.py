@@ -6,11 +6,13 @@ from auth.login import login_ui
 from components.sidebar import show_sidebar
 from components.cost_panel import show_cost_panel
 from upload.file_handler import upload_and_process_file
-from analysis.analyze_data import analyze_data_ui
+from analysis.analyze_data import analyze_data
 from analysis.analyze_feedback import analyze_feedback_ui
 from analysis.chat_with_doc import chat_with_doc_ui
 from analysis.analyze_data_ai import analyze_data_ai_ui
 from payment.deposit import deposit_ui
+
+
 
 # App Configuration
 st.set_page_config(page_title="Unified Analytics App", layout="wide")
