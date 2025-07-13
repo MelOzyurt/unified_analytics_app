@@ -10,9 +10,6 @@ def show_sidebar():
         if st.session_state.get("logged_in"):
             st.markdown(f"- **User:** `{st.session_state.username}`")
             st.markdown(f"- **Balance:** `${st.session_state.balance:.2f}`")
-
-            st.markdown("---")
-
             if st.button("🚪 Logout"):
                 reset_session()
                 st.success("Logged out.")
