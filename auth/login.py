@@ -1,4 +1,4 @@
-# login.py
+# auth/login.py
 
 import streamlit as st
 import json
@@ -31,35 +31,30 @@ def register_user(username, password):
 def login_user(username, password):
     users = load_users()
     hashed = hash_password(password)
-    if username in users and users[username] == hashed:
-        return True
-    return False
+    return username in users and users[username] == hashed
 
 def login_ui():
-    st.sidebar.subheader("🔐 Login or Register")
+    with st.sidebar:
+        st.markdown("#### 🔐 Access")
+        tab = st.radio("", ["Login", "Register"], horizontal=True)
 
-    tab = st.sidebar.radio("Choose", ["Login", "Register"])
+        if tab == "Login":
+            username = st.text_input("Username", key="login_user")
+            password = st.text_input("Password", type="password", key="login_pass")
+            if st.button("✅ Login"):
+                if login_user(username, password):
+                    st.session_state["logged_in"] = True
+                    st.session_state["username"] = username
+                    st.success(f"Welcome, {username}!")
+                else:
+                    st.error("❌ Invalid credentials.")
 
-    if tab == "Login":
-        username = st.sidebar.text_input("Username")
-        password = st.sidebar.text_input("Password", type="password")
-        if st.sidebar.button("Login"):
-            if login_user(username, password):
-                st.session_state["logged_in"] = True
-                st.session_state["username"] = username
-                st.success(f"Welcome, {username}!")
-            else:
-                st.error("Invalid username or password.")
-
-    elif tab == "Register":
-        username = st.sidebar.text_input("New Username")
-        password = st.sidebar.text_input("New Password", type="password")
-        if st.sidebar.button("Register"):
-            ok, msg = register_user(username, password)
-            if ok:
-                st.success(msg)
-            else:
-                st.error(msg)
+        else:
+            username = st.text_input("Username", key="reg_user")
+            password = st.text_input("Password", type="password", key="reg_pass")
+            if st.button("📝 Register"):
+                ok, msg = register_user(username, password)
+                st.success(msg) if ok else st.error(msg)
 
 def is_logged_in():
     return st.session_state.get("logged_in", False)
