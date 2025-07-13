@@ -9,7 +9,7 @@ def init_session_state():
     default_state = {
         "logged_in": False,
         "username": None,
-        "balance": 50.0,
+        "balance": 00.0,
         "uploaded_data": None,
         "file_type": None,
         "analysis_type": None,
