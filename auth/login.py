@@ -36,7 +36,13 @@ def login_user(username, password):
 def login_ui():
     with st.sidebar:
         st.markdown("#### 🔐 Access")
-        tab = st.radio("", ["Login", "Register"], horizontal=True)
+        tab = st.radio(
+            label="Select Action",
+            options=["Login", "Register"],
+            horizontal=True,
+            label_visibility="hidden"
+)
+
 
         if tab == "Login":
             username = st.text_input("Username", key="login_user")
