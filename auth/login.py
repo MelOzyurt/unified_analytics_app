@@ -1,30 +1,65 @@
-# auth/login.py
+# login.py
 
 import streamlit as st
+import json
+import hashlib
+import os
 
-# Simple in-memory user store (for demo/testing)
-DEMO_USERS = {
-    "demo": "password123",
-    "admin": "adminpass"
-}
+USERS_FILE = "users.json"
+
+def load_users():
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f)
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def register_user(username, password):
+    users = load_users()
+    if username in users:
+        return False, "Username already exists."
+    users[username] = hash_password(password)
+    save_users(users)
+    return True, "User registered successfully."
+
+def login_user(username, password):
+    users = load_users()
+    hashed = hash_password(password)
+    if username in users and users[username] == hashed:
+        return True
+    return False
 
 def login_ui():
-    st.subheader("🔐 Please Log In")
-    
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    st.sidebar.subheader("🔐 Login or Register")
 
-    if st.button("Login"):
-        if username in DEMO_USERS and DEMO_USERS[username] == password:
-            st.success(f"Welcome back, {username}!")
-            st.session_state.logged_in = True
-            st.session_state.username = username
+    tab = st.sidebar.radio("Choose", ["Login", "Register"])
 
-            # Set a default balance if first time login
-            if "balance" not in st.session_state:
-                st.session_state.balance = 50.0
+    if tab == "Login":
+        username = st.sidebar.text_input("Username")
+        password = st.sidebar.text_input("Password", type="password")
+        if st.sidebar.button("Login"):
+            if login_user(username, password):
+                st.session_state["logged_in"] = True
+                st.session_state["username"] = username
+                st.success(f"Welcome, {username}!")
+            else:
+                st.error("Invalid username or password.")
 
-        else:
-            st.error("Invalid username or password.")
+    elif tab == "Register":
+        username = st.sidebar.text_input("New Username")
+        password = st.sidebar.text_input("New Password", type="password")
+        if st.sidebar.button("Register"):
+            ok, msg = register_user(username, password)
+            if ok:
+                st.success(msg)
+            else:
+                st.error(msg)
 
-    st.markdown("Don't have an account? Use demo/demo123 or admin/adminpass for now.")
+def is_logged_in():
+    return st.session_state.get("logged_in", False)
