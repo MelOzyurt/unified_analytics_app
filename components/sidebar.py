@@ -15,5 +15,4 @@ def show_sidebar():
                 st.success("Logged out.")
                 st.experimental_rerun()
         else:
-            st.markdown("🔐 Please log in from the main page.", help="You can top up your balance later.")
-            st.caption("Tip: Balance top-up is available after login.")
+                st.caption("Tip: Balance top-up is available after login.")
