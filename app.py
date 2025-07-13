@@ -1,47 +1,37 @@
 import streamlit as st
-from login import login_ui, is_logged_in
-from sidebar import sidebar_ui
-from cost_panel import show_cost_panel
-from file_handler import handle_file_upload
+from components.sidebar import show_sidebar
+from auth.login import login_ui
+from data_upload import upload_data_ui
 from analysis.analyze_data import analyze_data_ui
 from analysis.analyze_feedback import analyze_feedback_ui
-from analysis.chat_with_doc import chat_with_doc_ui
-
-from components.sidebar import show_sidebar
-
-app_mode = show_sidebar()
-
+from chat.chat_with_doc import chat_with_doc_ui
 
 def main():
-    # Run login UI and check
-    login_ui()
-    if not is_logged_in():
-        st.warning("Please log in to use the app.")
-        st.stop()
+    st.set_page_config(page_title="Unified Analytics App")
 
-    st.title(f"📊 Unified Analytics App — Welcome {st.session_state['username']}")
+    # Show sidebar and get user's choice
+    app_mode = show_sidebar()
 
-    # Sidebar for choosing main app mode
-    app_mode = sidebar_ui()
+    # Check login state
+    if not st.session_state.get("logged_in", False):
+        login_ui()
+        return
 
-    # Show cost panel on right
-    show_cost_panel()
+    # After login, show data upload section
+    df = upload_data_ui()
 
-    # File upload section
-    uploaded_data = handle_file_upload()
+    # If no data uploaded, ask user
+    if df is None:
+        st.info("Please upload your data to continue.")
+        return
 
-    if uploaded_data:
-        # Depending on mode, show corresponding analysis UI
-        if app_mode == "Analyze Data":
-            analyze_data_ui(uploaded_data)
-        elif app_mode == "Analyze Feedback":
-            analyze_feedback_ui(uploaded_data)
-        elif app_mode == "Chat with Document":
-            chat_with_doc_ui(uploaded_data)
-        else:
-            st.info("Please select an analysis mode from the sidebar.")
-    else:
-        st.info("Please upload a data file to proceed.")
+    # Depending on sidebar choice, call the corresponding UI
+    if app_mode == "Analyze Data":
+        analyze_data_ui(df)
+    elif app_mode == "Analyze Feedback":
+        analyze_feedback_ui(df)
+    elif app_mode == "Chat with Document":
+        chat_with_doc_ui(df)
 
 if __name__ == "__main__":
     main()
