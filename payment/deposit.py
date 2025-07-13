@@ -2,8 +2,8 @@ import streamlit as st
 import stripe
 
 # Stripe ayarları
-stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
-PUBLISHABLE_KEY = st.secrets["STRIPE_PUBLISHABLE_KEY"]
+stripe_secret = st.secrets["stripe"]["secret_key"]
+stripe_publishable = st.secrets["stripe"]["publishable_key"]
 
 # Fiyat planı (USD cinsinden örnek)
 DEPOSIT_AMOUNTS = [5, 10, 20, 50, 100]  # Dolar
