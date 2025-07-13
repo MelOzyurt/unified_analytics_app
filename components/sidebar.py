@@ -2,10 +2,11 @@
 
 import streamlit as st
 from auth.session import reset_session
+from streamlit.runtime.scriptrunner import rerun  # ✅ EKLE
 
 def show_sidebar():
     with st.sidebar:
-        st.markdown("#### 👤 Account", unsafe_allow_html=True)
+        st.markdown("#### 👤 Account")
 
         if st.session_state.get("logged_in"):
             st.markdown(f"- **User:** `{st.session_state.username}`")
@@ -13,6 +14,6 @@ def show_sidebar():
             if st.button("🚪 Logout"):
                 reset_session()
                 st.success("Logged out.")
-                st.experimental_rerun()
+                rerun()  # ✅ GÜNCEL
         else:
-            pass  # 👈 Hiçbir şey göstermiyoruz, açıklamaları kaldırdık
+            st.caption("Tip: Balance top-up is available after login.")
