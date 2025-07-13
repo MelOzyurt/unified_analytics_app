@@ -7,31 +7,36 @@ from analysis.analyze_data import analyze_data_ui
 from analysis.analyze_feedback import analyze_feedback_ui
 from analysis.chat_with_doc import chat_with_doc_ui
 
-# --- Login First ---
-login_ui()
+def main():
+    # Run login UI and check
+    login_ui()
+    if not is_logged_in():
+        st.warning("Please log in to use the app.")
+        st.stop()
 
-if not is_logged_in():
-    st.stop()
+    st.title(f"📊 Unified Analytics App — Welcome {st.session_state['username']}")
 
-# --- Main App (after login) ---
-st.title(f"📊 Unified Analytics App — Welcome {st.session_state['username']}")
+    # Sidebar for choosing main app mode
+    app_mode = sidebar_ui()
 
-# Sidebar UI (app navigation)
-app_mode = sidebar_ui()
+    # Show cost panel on right
+    show_cost_panel()
 
-# Cost panel on right
-show_cost_panel()
+    # File upload section
+    uploaded_data = handle_file_upload()
 
-# File upload area
-uploaded_data = handle_file_upload()
+    if uploaded_data:
+        # Depending on mode, show corresponding analysis UI
+        if app_mode == "Analyze Data":
+            analyze_data_ui(uploaded_data)
+        elif app_mode == "Analyze Feedback":
+            analyze_feedback_ui(uploaded_data)
+        elif app_mode == "Chat with Document":
+            chat_with_doc_ui(uploaded_data)
+        else:
+            st.info("Please select an analysis mode from the sidebar.")
+    else:
+        st.info("Please upload a data file to proceed.")
 
-# Show analysis options only if file uploaded
-if uploaded_data:
-    if app_mode == "Analyze Data":
-        analyze_data_ui(uploaded_data)
-    elif app_mode == "Analyze Feedback":
-        analyze_feedback_ui(uploaded_data)
-    elif app_mode == "Chat with Document":
-        chat_with_doc_ui(uploaded_data)
-else:
-    st.warning("⬆️ Please upload your file to begin.")
+if __name__ == "__main__":
+    main()
