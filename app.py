@@ -1,4 +1,6 @@
 import streamlit as st
+
+# Custom Modules
 from auth.session import init_session_state
 from auth.login import login_ui
 from components.sidebar import show_sidebar
@@ -17,66 +19,67 @@ init_session_state()
 def main():
     st.title("📊 Unified Analytics Platform")
 
-    # Sidebar (User Info, Logout)
+    # Sidebar (User Info, Logout, etc.)
     show_sidebar()
 
-    # Login Flow
+    # If user is not logged in, show login screen and stop
     if not st.session_state.get("logged_in", False):
         login_ui()
         return
 
-    # Deposit Section
-    with st.expander("💳 Deposit Funds to Account"):
+    # 💳 Deposit Funds
+    with st.expander("💳 Deposit Funds to Account", expanded=False):
         deposit_ui()
 
-    # File Upload
+    # 📁 Upload Section
     st.header("📁 Upload Your Data")
     uploaded_data, file_type = upload_and_process_file()
 
     if uploaded_data is None:
         st.info("Please upload a valid file to continue.")
-    else:
-        st.success(f"✅ File uploaded successfully! Format: `{file_type}`")
-        st.dataframe(uploaded_data.head())
-        st.session_state["uploaded_data"] = uploaded_data
+        return
 
-        # Analysis Selection
-        st.subheader("🧠 Choose Analysis Type")
-        analysis_type = st.radio(
-            "Select an option:",
-            [
-                "Analyze Data (Classic)",
-                "Analyze Data (AI-Assisted)",
-                "Analyze Feedback",
-                "Chat With Document"
-            ]
-        )
-        st.session_state["analysis_type"] = analysis_type
+    st.success(f"✅ File uploaded successfully! Format: `{file_type}`")
+    st.dataframe(uploaded_data.head())
+    st.session_state["uploaded_data"] = uploaded_data
 
-        # Cost Panel
-        show_cost_panel(analysis_type)
+    # 🧠 Analysis Selection
+    st.subheader("🧠 Choose Analysis Type")
+    analysis_type = st.radio(
+        "Select an analysis option:",
+        [
+            "Analyze Data (Classic)",
+            "Analyze Data (AI-Assisted)",
+            "Analyze Feedback",
+            "Chat With Document"
+        ],
+        horizontal=True
+    )
+    st.session_state["analysis_type"] = analysis_type
 
-        # Run Analysis
-        if st.button("🚀 Run Analysis"):
-            if st.session_state.get("balance", 0) <= 0:
-                st.error("❌ Insufficient balance. Please deposit funds.")
-                return
+    # 💰 Show Cost Panel
+    show_cost_panel(analysis_type)
 
-            # Route to appropriate analysis
-            if analysis_type == "Analyze Data (Classic)":
-                analyze_data_ui(uploaded_data)
+    # 🚀 Run Analysis
+    if st.button("🚀 Run Analysis"):
+        if st.session_state.get("balance", 0) <= 0:
+            st.error("❌ Insufficient balance. Please deposit funds.")
+            return
 
-            elif analysis_type == "Analyze Data (AI-Assisted)":
-                analyze_data_ai_ui(uploaded_data)
+        if analysis_type == "Analyze Data (Classic)":
+            analyze_data_ui(uploaded_data)
 
-            elif analysis_type == "Analyze Feedback":
-                analyze_feedback_ui(uploaded_data)
+        elif analysis_type == "Analyze Data (AI-Assisted)":
+            analyze_data_ai_ui(uploaded_data)
 
-            elif analysis_type == "Chat With Document":
-                chat_with_doc_ui(uploaded_data)
+        elif analysis_type == "Analyze Feedback":
+            analyze_feedback_ui(uploaded_data)
 
-            else:
-                st.warning("⚠️ Invalid analysis type selected.")
+        elif analysis_type == "Chat With Document":
+            chat_with_doc_ui(uploaded_data)
+
+        else:
+            st.warning("⚠️ Invalid analysis type selected.")
 
 if __name__ == "__main__":
     main()
