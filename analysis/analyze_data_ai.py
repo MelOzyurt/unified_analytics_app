@@ -12,10 +12,11 @@ import streamlit as st
 
 client = OpenAI(api_key=st.secrets["openai_api_key"])  # Eğer API key `secrets.toml` dosyasındaysa
 
-import openai
+from openai import OpenAI
 import streamlit as st
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
 
 def ai_interpretation(prompt):
     try:
