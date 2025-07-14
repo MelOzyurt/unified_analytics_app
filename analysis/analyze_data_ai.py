@@ -7,10 +7,14 @@ from utils.analysis_utils import analyze_numeric, correlation_plot, chi_square_a
 
 # ✅ OpenAI API
 openai.api_key = st.secrets["OPENAI_API_KEY"]
+from openai import OpenAI
+import streamlit as st
+
+client = OpenAI(api_key=st.secrets["openai_api_key"])  # Eğer API key `secrets.toml` dosyasındaysa
 
 def ai_interpretation(prompt):
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4-1106-preview",
             messages=[
                 {"role": "system", "content": "You are a data analysis assistant. Provide insight and explain statistical results in plain language."},
@@ -22,6 +26,7 @@ def ai_interpretation(prompt):
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"**AI Error:** {e}"
+
 
 def analyze_data_ai_ui(df: pd.DataFrame):
     st.header("🔍 AI-Assisted Data Analysis")
