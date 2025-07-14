@@ -1,4 +1,4 @@
-# auth/login.py
+# File: auth/login.py
 
 import streamlit as st
 import json
@@ -10,7 +10,10 @@ USERS_FILE = "users.json"
 def load_users():
     if os.path.exists(USERS_FILE):
         with open(USERS_FILE, "r") as f:
-            return json.load(f)
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return {}
     return {}
 
 def save_users(users):
@@ -41,8 +44,7 @@ def login_ui():
             options=["Login", "Register"],
             horizontal=True,
             label_visibility="hidden"
-)
-
+        )
 
         if tab == "Login":
             username = st.text_input("Username", key="login_user")
@@ -51,10 +53,9 @@ def login_ui():
                 if login_user(username, password):
                     st.session_state["logged_in"] = True
                     st.session_state["username"] = username
-                    st.success(f"Welcome, {username}!")
+                    st.success(f"✅ Welcome, {username}!")
                 else:
                     st.error("❌ Invalid credentials.")
-
         else:
             username = st.text_input("Username", key="reg_user")
             password = st.text_input("Password", type="password", key="reg_pass")
