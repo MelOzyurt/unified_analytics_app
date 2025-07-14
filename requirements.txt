@@ -13,3 +13,5 @@ matplotlib
 xlrd
 pyarrow
 stripe
+openai==0.28
+
