@@ -1,18 +1,27 @@
 # chat/chat_with_doc.py
 
 import streamlit as st
-import openai
+from openai import OpenAI
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# Placeholder for LLM API call - replace with your actual LLM integration
 def query_llm(question: str, context: str) -> str:
     """
-    Simulate an LLM answering a question based on the given context.
-    Replace this with actual API call to GPT or other model.
+    Sends the question and context to OpenAI's GPT model and returns the response.
     """
-    # For demo, just echo question + first 200 chars of context
-    return f"Answering your question:\n\n**Question:** {question}\n\n**Context snippet:** {context[:200]}...\n\n(This is a placeholder answer.)"
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=[
+                {"role": "system", "content": "You are an AI assistant that answers questions based on provided documents."},
+                {"role": "user", "content": f"Context: {context}\n\nQuestion: {question}"}
+            ],
+            max_tokens=500,
+            temperature=0.7
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"❌ AI Error: {e}"
 
 def chat_with_doc_ui(doc_text: str):
     st.header("💬 Chat With Document")
