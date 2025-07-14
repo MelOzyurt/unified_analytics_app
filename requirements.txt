@@ -6,14 +6,12 @@ openpyxl
 streamlit
 pandas
 numpy
-openai
 scikit-learn
 plotly
 matplotlib
 xlrd
 pyarrow
 stripe
-openai==0.28
 openai>=1.0.0
 
 
